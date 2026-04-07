@@ -87,11 +87,11 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.mapleader = ','
+vim.g.maplocalleader = ','
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -198,10 +198,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -211,6 +211,31 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+vim.keymap.set('n', '<leader>w', '<cmd>w<cr>', { desc = 'Write the current buffer' })
+vim.keymap.set('n', '<leader>a', '<cmd>wqall<cr>', { desc = 'Write and quit all open buffers' })
+vim.keymap.set('n', '<leader>q', '<cmd>qall!<cr>', { desc = 'Quit all open buffers without saving' })
+
+vim.keymap.set('n', '<leader><leader>', '<C-W><C-w>', { desc = 'Rotate split focus' })
+vim.keymap.set('n', '<leader>b', '<C-W>W', { desc = 'Rotate split focus back' })
+
+-- Switch between tabs
+vim.keymap.set('n', '<leader>1', '1gt')
+vim.keymap.set('n', '<leader>2', '2gt')
+vim.keymap.set('n', '<leader>3', '3gt')
+vim.keymap.set('n', '<leader>4', '4gt')
+vim.keymap.set('n', '<leader>5', '5gt')
+vim.keymap.set('n', '<leader>6', '6gt')
+vim.keymap.set('n', '<leader>7', '7gt')
+vim.keymap.set('n', '<leader>8', '8gt')
+
+-- Movement
+vim.keymap.set('n', 'j', 'gj', { desc = 'Move down by visual line' })
+vim.keymap.set('n', 'k', 'gk', { desc = 'Move up by visual line' })
+vim.keymap.set('n', 'B', '^', { desc = 'Move to beginning of line' })
+vim.keymap.set('n', 'E', '$', { desc = 'Move to end of line' })
+vim.keymap.set('i', 'jk', '<esc>')
+vim.keymap.set('i', 'kj', '<esc>')
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -287,6 +312,15 @@ require('lazy').setup({
         changedelete = { text = '~' }, ---@diagnostic disable-line: missing-fields
       },
     },
+  },
+
+  {
+    'rhysd/git-messenger.vim',
+    keys = { '<leader>gm' }, -- lazy-load, only load when keymap is triggered
+    init = function()
+      vim.g.git_messenger_floating_win_opts = { border = 'rounded' }
+      vim.g.git_messenger_always_into_popup = true
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -415,7 +449,8 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch [C]ommands' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      -- vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
       -- it is better explained there). This allows easily switching between pickers if you prefer using something else!
@@ -476,6 +511,38 @@ require('lazy').setup({
 
       -- Shortcut for searching your Neovim configuration files
       vim.keymap.set('n', '<leader>sn', function() builtin.find_files { cwd = vim.fn.stdpath 'config' } end, { desc = '[S]earch [N]eovim files' })
+    end,
+  },
+
+  {
+    'ibhagwan/fzf-lua',
+    enabled = false,
+    branch = 'main',
+    dependencies = {
+      'junegunn/fzf',
+      'nvim-tree/nvim-web-devicons',
+    },
+    ---@module "fzf-lua"
+    ---@type fzf-lua.Config|{}
+    ---@diagnostic disable: missing-fields
+    opts = {},
+    ---@diagnostic enable: missing-fields
+    config = function()
+      require('fzf-lua').setup {}
+
+      local opts = { silent = true }
+      local map = vim.keymap.set
+      map('n', ';', "<cmd>lua require('fzf-lua').buffers()<CR>", opts)
+      map('n', 'f', "<cmd>lua require('fzf-lua').files()<CR>", opts)
+      map('n', 'F', "<cmd>lua require('fzf-lua').files({ cwd = '~/' })<CR>", opts)
+      map('n', 't', "<cmd>lua require('fzf-lua').btags()<CR>", opts)
+      map('n', 'T', "<cmd>lua require('fzf-lua').tags()<CR>", opts)
+      map('n', 's', "<cmd>lua require('fzf-lua').live_grep_native()<CR>", opts)
+      map('n', '\\', "<cmd>lua require('fzf-lua').blines()<CR>", opts)
+      map('n', 'K', "<cmd>lua require('fzf-lua').grep_cword()<CR>", opts)
+      map('n', 'q:', "<cmd>lua require('fzf-lua').command_history()<CR>", opts)
+      map('n', 'q/', "<cmd>lua require('fzf-lua').search_history()<CR>", opts)
+      map('n', '<C-k>', "<cmd>lua require('fzf-lua').builtin()<CR>", opts)
     end,
   },
 
@@ -760,7 +827,12 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
+        preset = 'enter',
+
+        ['<C-j>'] = { 'select_next', 'fallback' },
+        ['<C-k>'] = { 'select_prev', 'fallback' },
+        ['<C-n>'] = {}, -- disable default
+        ['<C-p>'] = {}, -- disable default
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -798,25 +870,46 @@ require('lazy').setup({
     },
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  -- { -- You can easily change to a different colorscheme.
+  --   -- Change the name of the colorscheme plugin below, and then
+  --   -- change the command in the config to whatever the name of that colorscheme is.
+  --   --
+  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  --   'folke/tokyonight.nvim',
+  --   priority = 1000, -- Make sure to load this before all the other start plugins.
+  --   config = function()
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     require('tokyonight').setup {
+  --       styles = {
+  --         comments = { italic = false }, -- Disable italics in comments
+  --       },
+  --     }
+  --
+  --     -- Load the colorscheme here.
+  --     -- Like many other themes, this one has different styles, and you could load
+  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  --     vim.cmd.colorscheme 'tokyonight-night'
+  --   end,
+  -- },
+
+  {
+    'navarasu/onedark.nvim',
+    priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
+      require('onedark').setup {
+        style = 'warmer',
+        code_style = {
+          comments = 'italic',
+          keywords = 'none',
+          functions = 'bold',
+          strings = 'none',
+          variables = 'none',
+        },
+        lualine = {
+          transparent = false, -- lualine center bar transparency
         },
       }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      require('onedark').load()
     end,
   },
 
@@ -829,6 +922,60 @@ require('lazy').setup({
     ---@type TodoOptions
     ---@diagnostic disable-next-line: missing-fields
     opts = { signs = false },
+  },
+
+  {
+    'rmagatti/auto-session',
+    lazy = false,
+
+    ---enables autocomplete for opts
+    ---@module "auto-session"
+    ---@type AutoSession.Config
+    opts = {
+      suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
+      -- log_level = 'debug',
+    },
+  },
+
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'rmagatti/auto-session' },
+    config = function()
+      require('lualine').setup {
+        options = { theme = 'auto' },
+        extensions = { 'fzf' },
+        sections = {
+          lualine_c = { require('auto-session.lib').current_session_name },
+        },
+      }
+    end,
+  },
+
+  {
+    'akinsho/bufferline.nvim',
+    version = '*',
+    config = function()
+      require('bufferline').setup {
+        options = {
+          diagnostics = 'nvim_lsp',
+          mode = 'tabs',
+          numbers = function(opts) return string.format('%s', opts.raise(opts.ordinal)) end,
+          offsets = {
+            {
+              filetype = 'NvimTree',
+              text = 'File Explorer',
+              separator = true,
+              highlight = 'Directory',
+            },
+          },
+          separator_style = 'slant',
+          diagnostics_indicator = function(count, level)
+            local icon = level:match 'error' and ' ' or ' '
+            return ' ' .. icon .. count
+          end,
+        },
+      }
+    end,
   },
 
   { -- Collection of various small independent plugins/modules
@@ -852,15 +999,15 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
+      -- local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      -- statusline.setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function() return '%2l:%-2v' end
+      -- statusline.section_location = function() return '%2l:%-2v' end
 
       -- ... and there is more!
       --  Check out: https://github.com/nvim-mini/mini.nvim
