@@ -187,7 +187,7 @@ vim.diagnostic.config {
   jump = { float = true },
 }
 
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+-- vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -212,9 +212,9 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
-vim.keymap.set('n', '<leader>w', '<cmd>w<cr>', { desc = 'Write the current buffer' })
-vim.keymap.set('n', '<leader>a', '<cmd>wqall<cr>', { desc = 'Write and quit all open buffers' })
-vim.keymap.set('n', '<leader>q', '<cmd>qall!<cr>', { desc = 'Quit all open buffers without saving' })
+vim.keymap.set('n', '<leader>w', '<cmd>w<cr>', { desc = '[W]rite current buffer' })
+vim.keymap.set('n', '<leader>a', '<cmd>wqall<cr>', { desc = '[W]rite and quit [A]ll open buffers' })
+vim.keymap.set('n', '<leader>q', '<cmd>qall!<cr>', { desc = '[Q]uit [A]ll open buffers without saving' })
 
 vim.keymap.set('n', '<leader><leader>', '<C-W><C-w>', { desc = 'Rotate split focus' })
 vim.keymap.set('n', '<leader>b', '<C-W>W', { desc = 'Rotate split focus back' })
@@ -422,11 +422,17 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          mappings = {
+            i = {
+              ['<c-enter>'] = 'to_fuzzy_refine',
+              ['<c-j>'] = 'move_selection_next',
+              ['<c-k>'] = 'move_selection_previous',
+            },
+          },
+          layout_strategy = 'horizontal',
+          layout_config = { preview_width = 0.6 },
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = { require('telescope.themes').get_dropdown() },
@@ -441,16 +447,20 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      -- vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', 'f', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set({ 'n', 'v' }, '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+      -- vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+      vim.keymap.set('n', 's', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch [C]ommands' })
+      vim.keymap.set('n', '<leader>st', builtin.current_buffer_tags, { desc = '[S]earch [T]ags' })
+      vim.keymap.set('n', '<leader>sb', builtin.current_buffer_fuzzy_find, { desc = '[S]earch [B]uffer' })
       -- vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
-      vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', ';', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
       -- it is better explained there). This allows easily switching between pickers if you prefer using something else!
@@ -667,8 +677,10 @@ require('lazy').setup({
       --  See `:help lsp-config` for information about keys and how to configure
       ---@type table<string, vim.lsp.Config>
       local servers = {
-        -- clangd = {},
-        -- gopls = {},
+        clangd = {},
+        gopls = {},
+        pylsp = {},
+        bashls = {},
         -- pyright = {},
         -- rust_analyzer = {},
         --
@@ -676,7 +688,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
 
         stylua = {}, -- Used to format Lua code
 
@@ -1065,6 +1077,18 @@ require('lazy').setup({
         end,
       })
     end,
+  },
+
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function() require('nvim-tree').setup {} end,
+
+    vim.keymap.set('n', '<leader>t', '<cmd>NvimTreeToggle<cr>', { desc = '[T]oggle nvim-tree' }),
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
